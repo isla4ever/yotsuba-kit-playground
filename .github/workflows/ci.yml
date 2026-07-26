@@ -1,0 +1,23 @@
+name: Consumer CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 每日对最新发布版跑一次消费方测试,发版破坏第一时间暴露
+    - cron: '23 1 * * *'
+
+jobs:
+  consume:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile # 始终解析 ^ 范围内最新发布版
+      - run: pnpm test
+      - run: pnpm build

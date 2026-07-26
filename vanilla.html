@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- 原生 HTML 展示:零构建,CDN ESM 直接使用 <ys-schedule> 自定义元素 -->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yotsuba Kit · 原生 HTML 展示</title>
+    <style>
+      * { margin: 0; box-sizing: border-box; }
+      html, body { height: 100%; font-family: system-ui, sans-serif; background: #eef1f5; }
+      .wrap { max-width: 430px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; background: #fff; }
+      header { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e3e8ee; }
+      header small { color: #8a94a3; }
+      ys-schedule { flex: 1; min-height: 0; display: block; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header><strong>原生 HTML</strong> <small>· @iyotsuba/schedule-elements(esm.sh CDN,无任何构建)</small></header>
+      <ys-schedule id="schedule"></ys-schedule>
+    </div>
+    <script type="module">
+      import 'https://esm.sh/@iyotsuba/schedule-elements@^0.4.0'
+
+      const el = document.getElementById('schedule')
+      const monday = (() => {
+        const now = new Date()
+        const d = new Date(now)
+        d.setDate(now.getDate() - ((now.getDay() || 7) - 1))
+        return d
+      })()
+
+      el.courses = [
+        { id: 'math', name: '高等数学', location: '教1-201', weekday: 1, startSection: 1, endSection: 2, startWeek: 1, endWeek: 20 },
+        { id: 'en', name: '大学英语', location: '外语楼302', weekday: 2, startSection: 3, endSection: 4, startWeek: 1, endWeek: 20 },
+        { id: 'pe', name: '体育（单周）', weekday: 4, startSection: 1, endSection: 2, startWeek: 1, endWeek: 16, parity: 'odd' },
+        { id: 'phy', name: '大学物理', location: '理科楼210', weekday: 5, startSection: 3, endSection: 4, startWeek: 1, endWeek: 16 },
+      ]
+      el.week = 1
+      el.termStart = monday
+      el.addEventListener('update:week', event => { el.week = event.detail[0] })
+    </script>
+  </body>
+</html>
