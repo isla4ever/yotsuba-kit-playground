@@ -222,7 +222,9 @@ const nextReminder = computed(() => {
   flex-direction: column;
   max-width: 430px;
   height: 100%;
+  min-width: 0;
   margin: 0 auto;
+  overflow: hidden;
   background: #fff;
   box-shadow: 0 0 40px rgb(0 0 0 / 8%);
 }
@@ -231,16 +233,26 @@ const nextReminder = computed(() => {
 
 .bar {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px 8px;
   align-items: center;
-  padding: 10px 12px;
+  min-width: 0;
+  padding: 8px 12px;
   font-size: 13px;
   border-bottom: 1px solid #e3e8ee;
 }
 
+.bar strong { white-space: nowrap; }
+
 .app.dark .bar { color: #eef1f5; border-color: #333a45; }
 
-.bar__meta { font-size: 10px; color: #8a94a3; }
+.bar__meta {
+  overflow: hidden;
+  font-size: 10px;
+  color: #8a94a3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .bar__spacer { flex: 1; }
 
 .bar button,
@@ -266,11 +278,14 @@ const nextReminder = computed(() => {
 
 .dock {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
   padding: 8px;
   border-top: 1px solid #e3e8ee;
 }
+
+.dock button { white-space: nowrap; }
 
 .app.dark .dock { border-color: #333a45; }
 
