@@ -18,6 +18,11 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Build Yotsuba Kit source dependencies
+        run: |
+          git clone --depth 1 https://github.com/isla4ever/yotsuba-kit.git ../yotsuba-kit
+          pnpm --dir ../yotsuba-kit install --frozen-lockfile
+          pnpm --dir ../yotsuba-kit build
       - run: pnpm install --no-frozen-lockfile # 始终解析 ^ 范围内最新发布版
       - run: pnpm test
       - run: pnpm build
