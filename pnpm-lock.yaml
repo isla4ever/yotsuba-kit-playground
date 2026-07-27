@@ -31,8 +31,11 @@ importers:
   react-app:
     dependencies:
       '@iyotsuba/schedule-react':
-        specifier: ^0.3.1
-        version: 0.3.1(react@19.2.8)
+        specifier: link:../../yotsuba-kit/packages/react
+        version: link:../../yotsuba-kit/packages/react
+      lucide-react:
+        specifier: ^0.468.0
+        version: 0.468.0(react@19.2.8)
       react:
         specifier: ^19.0.0
         version: 19.2.8
@@ -59,11 +62,14 @@ importers:
   vue-app:
     dependencies:
       '@iyotsuba/schedule-core':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: link:../../yotsuba-kit/packages/core
+        version: link:../../yotsuba-kit/packages/core
       '@iyotsuba/schedule-vue':
-        specifier: ^0.4.0
-        version: 0.4.0(vue@3.5.40(typescript@5.9.3))
+        specifier: link:../../yotsuba-kit/packages/vue
+        version: link:../../yotsuba-kit/packages/vue
+      '@lucide/vue':
+        specifier: ^1.27.0
+        version: 1.27.0(vue@3.5.40(typescript@5.9.3))
       vue:
         specifier: ^3.5.13
         version: 3.5.40(typescript@5.9.3)
@@ -489,19 +495,8 @@ packages:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
 
-  '@iyotsuba/schedule-core@0.3.0':
-    resolution: {integrity: sha512-cbOYPTjSTDjx0brQxuj0pV8dC8NPKZJj4KEKxF9IYSleKtzi5Y1TXcXnaOQGz5yWWn27QyK3x2Gi5xgkzDZ8wQ==}
-
   '@iyotsuba/schedule-core@0.4.0':
     resolution: {integrity: sha512-35eV7+dLmwfaIqj9PQLlxWh1HdCBtwMt7XKqAIrEmY/434KxqvaHwmSfU/arM1FGSUPqCTzJmrRaZx0FxLgaTQ==}
-
-  '@iyotsuba/schedule-elements@0.3.1':
-    resolution: {integrity: sha512-R4P51H+z8LSQDeIwrn21ejy6KKeFMjAKDjA1+SyI2GK6+ct61TB8Q+0cHIyuaoc0QY85cl6lpC5B0nq7Zxi8kg==}
-
-  '@iyotsuba/schedule-react@0.3.1':
-    resolution: {integrity: sha512-a2XLMFW7XoDxIFMOMCuBx2fyF7BsVy8cpEjRXdrtz8LaNbDIGoPeMw5G73vTRx/NWo5Uj2zNOs0/+yCzbXreLA==}
-    peerDependencies:
-      react: '>=18'
 
   '@iyotsuba/schedule-vue@0.4.0':
     resolution: {integrity: sha512-fVuNjlX+CTBaGqgYK5Kw+pAXdG0sZ9SnzdExSw09xNW6+uRlNy48/uDAPjhzrS79UXXJcro9ssxG9sBOXUW9fQ==}
@@ -523,6 +518,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lucide/vue@1.27.0':
+    resolution: {integrity: sha512-LKDEZJ0Uo9UaT4vxBMYVwXeK/0dGcWCTdav1AK/aGD/jYsDPtiVvOgfM7jPlx9BVeyGZ1Uf0aQhHA++rmbe7rw==}
+    peerDependencies:
+      vue: '>=3.0.1'
 
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
@@ -1083,6 +1083,11 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-react@0.468.0:
+    resolution: {integrity: sha512-6koYRhnM2N0GGZIdXzSeiNwguv1gt/FAjZOiPl76roBi3xKEXa4WmfpxgQwTTL4KipXjefrnf3oV4IsYhi4JFA==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -1772,19 +1777,7 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@iyotsuba/schedule-core@0.3.0': {}
-
   '@iyotsuba/schedule-core@0.4.0': {}
-
-  '@iyotsuba/schedule-elements@0.3.1':
-    dependencies:
-      '@iyotsuba/schedule-core': 0.3.0
-
-  '@iyotsuba/schedule-react@0.3.1(react@19.2.8)':
-    dependencies:
-      '@iyotsuba/schedule-core': 0.3.0
-      '@iyotsuba/schedule-elements': 0.3.1
-      react: 19.2.8
 
   '@iyotsuba/schedule-vue@0.4.0(vue@3.5.40(typescript@5.9.3))':
     dependencies:
@@ -1809,6 +1802,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lucide/vue@1.27.0(vue@3.5.40(typescript@5.9.3))':
+    dependencies:
+      vue: 3.5.40(typescript@5.9.3)
 
   '@one-ini/wasm@0.1.1': {}
 
@@ -2400,6 +2397,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-react@0.468.0(react@19.2.8):
+    dependencies:
+      react: 19.2.8
 
   magic-string@0.30.21:
     dependencies:

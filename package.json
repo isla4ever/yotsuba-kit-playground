@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.9",
-  "description": "Consumer-side playground & dependency tests for @iyotsuba/schedule-* — installs from the npm registry exactly like a real user.",
+  "description": "Vue and React consumer playground for local pre-release integration and npm registry verification of @iyotsuba/schedule-*.",
   "scripts": {
     "test": "vitest run",
     "dev:vue": "pnpm --filter vue-showcase dev",
