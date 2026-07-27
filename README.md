@@ -25,6 +25,8 @@
 
 Vue 演示的设置项直接绑定 `@iyotsuba/schedule-vue` Props，不是只修改演示应用外层样式。长期默认放在设置中，高频调整保留在对应模块：周 Header 切换档位，课程详情切换精简 / 适中 / 全面，弹层 Header 调整位置，Today 通过长按或 Header 入口编辑布局。
 
+Vue 与 React 的 Today 默认覆盖 `1x1 / 1x2 / 2x1 / 2x2` 四种尺寸。内置「本周一览」在大卡展示七日课程柱状图；Vue 额外通过 `#widget-study-load` 演示自定义内容如何根据 `layout.columns / rows` 在数字、列表和图表之间切换。
+
 ## 运行
 
 ```bash

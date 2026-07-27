@@ -70,10 +70,10 @@ const initialWidgets: TodayWidgetConfig[] = [
   { id: 'next-course', size: '2x1' },
   { id: 'weather', size: '1x1' },
   { id: 'today-timeline', size: '2x1' },
-  { id: 'readiness', size: '2x1' },
+  { id: 'readiness', size: '1x2' },
   { id: 'course-tasks', size: '2x1' },
   { id: 'plans', size: '2x1' },
-  { id: 'week-glance', size: '1x1' },
+  { id: 'week-glance', size: '2x2' },
 ]
 
 function dateKey(date: Date) {

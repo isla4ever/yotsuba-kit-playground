@@ -131,8 +131,20 @@ const DEFAULT_TODAY_WIDGETS: TodayWidgetConfig[] = [
   { id: 'readiness', size: '2x1' },
   { id: 'course-tasks', size: '2x1' },
   { id: 'plans', size: '2x1' },
-  { id: 'week-glance', size: '1x1' },
+  { id: 'study-load', size: '1x2' },
+  { id: 'week-glance', size: '2x2' },
 ]
+
+const STUDY_LOAD = [
+  { day: '一', minutes: 72 },
+  { day: '二', minutes: 96 },
+  { day: '三', minutes: 54 },
+  { day: '四', minutes: 118 },
+  { day: '五', minutes: 84 },
+  { day: '六', minutes: 42 },
+  { day: '日', minutes: 66 },
+]
+const STUDY_LOAD_MAX = Math.max(...STUDY_LOAD.map(item => item.minutes))
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -571,7 +583,42 @@ function cycleTopBar() {
           :weather-scene="config.weatherScene"
           empty-text="暂无信息"
           arrangeable
-        />
+        >
+          <template #widget-study-load="{ layout }">
+            <div class="study-load" :class="`is-${layout.columns}x${layout.rows}`">
+              <div class="study-load__head">
+                <div>
+                  <span>学习投入</span>
+                  <strong>8.9 小时</strong>
+                </div>
+                <small>较上周 +12%</small>
+              </div>
+
+              <div v-if="layout.columns === 1 && layout.rows === 1" class="study-load__compact">
+                <b>126</b><span>今日分钟</span>
+              </div>
+
+              <ul v-else-if="layout.columns === 1" class="study-load__sessions">
+                <li><span>高等数学</span><b>48 分钟</b></li>
+                <li><span>数据结构</span><b>42 分钟</b></li>
+                <li><span>英语听力</span><b>36 分钟</b></li>
+              </ul>
+
+              <div v-else class="study-load__chart" role="img" aria-label="本周每日学习时长柱状图">
+                <div v-for="item in STUDY_LOAD" :key="item.day">
+                  <b v-if="layout.rows === 2">{{ item.minutes }}</b>
+                  <i><span :style="{ height: `${item.minutes / STUDY_LOAD_MAX * 100}%` }" /></i>
+                  <small>{{ item.day }}</small>
+                </div>
+              </div>
+
+              <div v-if="layout.columns === 2 && layout.rows === 2" class="study-load__summary">
+                <span><b>4</b> 次深度专注</span>
+                <span><b>78%</b> 目标完成</span>
+              </div>
+            </div>
+          </template>
+        </YsToday>
       </div>
     </main>
 
@@ -764,6 +811,29 @@ function cycleTopBar() {
 .stage__today { width: 100%; max-width: 100%; height: 100%; min-width: 0; }
 .stage__today { overflow-y: auto; scrollbar-width: none; }
 .stage__today::-webkit-scrollbar { display: none; }
+
+.study-load { display: flex; flex-direction: column; height: 100%; min-width: 0; }
+.study-load__head { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+.study-load__head > div { display: flex; flex-direction: column; min-width: 0; }
+.study-load__head span { font-size: 10px; font-weight: 700; color: var(--ys-text-3); }
+.study-load__head strong { margin-top: 2px; font-size: 18px; }
+.study-load__head small { flex: 0 0 auto; font-size: 9px; color: var(--ys-success); }
+.study-load__compact { display: flex; gap: 6px; align-items: baseline; margin-top: auto; }
+.study-load__compact b { font-size: 26px; }
+.study-load__compact span { font-size: 9px; color: var(--ys-text-3); }
+.study-load__sessions { display: flex; flex: 1; flex-direction: column; justify-content: space-around; padding: 10px 0 0; margin: 0; list-style: none; }
+.study-load__sessions li { display: flex; gap: 6px; justify-content: space-between; font-size: 10px; color: var(--ys-text-2); }
+.study-load__sessions li b { font-weight: 650; color: var(--ys-text-1); }
+.study-load__chart { display: flex; flex: 1; gap: 7px; align-items: flex-end; min-height: 34px; margin-top: 10px; }
+.study-load__chart > div { display: grid; flex: 1; grid-template-rows: auto minmax(0, 1fr) auto; gap: 3px; height: 100%; min-width: 0; text-align: center; }
+.study-load__chart b { font-size: 8px; color: var(--ys-text-3); }
+.study-load__chart i { display: flex; align-items: flex-end; min-height: 0; overflow: hidden; background: var(--ys-accent-soft); border-radius: 3px 3px 1px 1px; }
+.study-load__chart i span { display: block; width: 100%; min-height: 3px; background: var(--ys-accent); border-radius: 3px 3px 1px 1px; transition: height 180ms ease; }
+.study-load__chart small { font-size: 8px; color: var(--ys-text-3); }
+.study-load__summary { display: flex; gap: 18px; margin-top: 10px; padding-top: 9px; font-size: 9px; color: var(--ys-text-3); border-top: 1px solid var(--ys-border); }
+.study-load__summary b { margin-right: 3px; font-size: 11px; color: var(--ys-text-1); }
+.study-load.is-2x1 .study-load__head strong { font-size: 15px; }
+.study-load.is-2x1 .study-load__chart { margin-top: 5px; }
 
 .module-toolbar {
   z-index: 12;
