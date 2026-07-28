@@ -25,6 +25,7 @@ import { useMemo, useRef, useState } from 'react'
 import './App.css'
 
 type ViewName = 'schedule' | 'today'
+type CourseCardStyle = CardEffect | 'weather'
 
 const courses: Course[] = [
   {
@@ -87,7 +88,7 @@ export function App() {
   const [week, setWeek] = useState(1)
   const [view, setView] = useState<ViewName>('schedule')
   const [transition, setTransition] = useState<BuiltinTransitionName>('wave')
-  const [cardEffect, setCardEffect] = useState<CardEffect>('shimmer')
+  const [courseCardStyle, setCourseCardStyle] = useState<CourseCardStyle>('weather')
   const [detailLayout, setDetailLayout] = useState<DetailLayout>('standard')
   const [weatherScene, setWeatherScene] = useState(true)
   const [widgets, setWidgets] = useState(initialWidgets)
@@ -110,7 +111,7 @@ export function App() {
   }, [termStart])
 
   const weather = useMemo<WeatherSnapshot>(() => {
-    const kinds = ['clear', 'cloudy', 'rain', 'overcast', 'clear', 'drizzle', 'cloudy'] as const
+    const kinds = ['clear', 'cloudy', 'rain', 'heavy-rain', 'storm', 'drizzle', 'snow'] as const
     return {
       current: { kind: 'cloudy', temperatureC: 26, label: '多云' },
       daily: Array.from({ length: 21 }, (_, index) => {
@@ -126,6 +127,14 @@ export function App() {
       updatedAt: new Date(),
     }
   }, [termStart])
+  const cardEffect: CardEffect = courseCardStyle === 'weather' ? 'none' : courseCardStyle
+  const weatherCard = {
+    enabled: true,
+    glyph: true,
+    background: courseCardStyle === 'weather',
+    label: true,
+    intensity: 0.72,
+  }
 
   function notify(message: string) {
     setToast(message)
@@ -181,13 +190,14 @@ export function App() {
           </select>
         </label>
         <label>
-          <span>卡片</span>
-          <select value={cardEffect} onChange={event => setCardEffect(event.target.value as CardEffect)}>
-            <option value="shimmer">流光</option>
-            <option value="glow">微光</option>
+          <span>课程卡</span>
+          <select value={courseCardStyle} onChange={event => setCourseCardStyle(event.target.value as CourseCardStyle)}>
+            <option value="weather">实时天气</option>
+            <option value="none">无</option>
+            <option value="shimmer">微光</option>
+            <option value="glow">辉光</option>
             <option value="aurora">极光</option>
             <option value="breathe">呼吸</option>
-            <option value="none">关闭</option>
           </select>
         </label>
         <label>
@@ -226,7 +236,7 @@ export function App() {
             weather={weather}
             transition={transition}
             cardEffect={cardEffect}
-            weatherCard={{ enabled: true, glyph: true, background: true, label: true, intensity: 0.72 }}
+            weatherCard={weatherCard}
             weekdayWeather="full"
             weatherScene={weatherScene}
             detail={{

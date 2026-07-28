@@ -54,6 +54,7 @@ type ViewName = 'schedule' | 'today'
 type ScheduleLayout = 'grid' | 'list'
 type ThemeName = 'light' | 'dark'
 type TopBarPreset = 'compact' | 'standard' | 'expanded' | 'none'
+type CourseCardStyle = CardEffect | 'weather'
 
 interface PlaygroundConfig {
   theme: ThemeName
@@ -64,7 +65,7 @@ interface PlaygroundConfig {
   density: ScheduleDensity
   palette: PaletteName
   transition: BuiltinTransitionName
-  cardEffect: CardEffect
+  courseCardStyle: CourseCardStyle
   weatherScene: boolean
   detailHero: DetailHero
   detailLayout: DetailLayout
@@ -90,7 +91,7 @@ const DEFAULT_CONFIG: PlaygroundConfig = {
   density: 'normal',
   palette: 'classic',
   transition: 'wave',
-  cardEffect: 'shimmer',
+  courseCardStyle: 'weather',
   weatherScene: true,
   detailHero: 'weather',
   detailLayout: 'standard',
@@ -302,6 +303,16 @@ const weatherTemperature = computed(() => {
   const value = weather.value?.current?.temperatureC
   return value == null ? '--' : `${Math.round(value)}°`
 })
+const selectedCardEffect = computed<CardEffect>(() =>
+  config.courseCardStyle === 'weather' ? 'none' : config.courseCardStyle,
+)
+const selectedWeatherCard = computed(() => ({
+  enabled: true,
+  glyph: true,
+  background: config.courseCardStyle === 'weather',
+  label: true,
+  intensity: 0.72,
+}))
 const rowHeight = computed(() => config.density === 'minimal' ? 48 : config.density === 'rich' ? 64 : 56)
 const detailActions = computed<DetailAction[]>(() => {
   if (!config.detailActions) {
@@ -452,7 +463,7 @@ function cycleTopBar() {
         <Sun v-else-if="weatherKind === 'clear'" :size="17" :stroke-width="1.8" aria-hidden="true" />
         <CloudSun v-else-if="weatherKind === 'cloudy'" :size="17" :stroke-width="1.8" aria-hidden="true" />
         <CloudFog v-else-if="weatherKind === 'fog'" :size="17" :stroke-width="1.8" aria-hidden="true" />
-        <CloudRain v-else-if="weatherKind === 'drizzle' || weatherKind === 'rain'" :size="17" :stroke-width="1.8" aria-hidden="true" />
+        <CloudRain v-else-if="weatherKind === 'drizzle' || weatherKind === 'rain' || weatherKind === 'heavy-rain'" :size="17" :stroke-width="1.8" aria-hidden="true" />
         <CloudLightning v-else-if="weatherKind === 'storm'" :size="17" :stroke-width="1.8" aria-hidden="true" />
         <Cloud v-else :size="17" :stroke-width="1.8" aria-hidden="true" />
         <span>{{ weatherTemperature }}</span>
@@ -534,7 +545,8 @@ function cycleTopBar() {
           :density="config.density"
           :palette="config.palette"
           :transition="config.transition"
-          :card-effect="config.cardEffect"
+          :card-effect="selectedCardEffect"
+          :weather-card="selectedWeatherCard"
           :weather-scene="config.weatherScene"
           :sheets="sheetConfig"
           :detail="{ hero: config.detailHero, layout: config.detailLayout, fields: DETAIL_FIELDS, actions: detailActions, adjustable: true }"
@@ -669,7 +681,7 @@ function cycleTopBar() {
         <section class="settings-group">
           <h3>课表模块</h3>
           <label class="setting-row"><span>信息密度</span><select v-model="config.density"><option value="minimal">精简</option><option value="normal">标准</option><option value="rich">丰富</option></select></label>
-          <label class="setting-row"><span>课程卡效果</span><select v-model="config.cardEffect"><option value="none">无</option><option value="shimmer">微光</option><option value="glow">辉光</option><option value="aurora">极光</option><option value="breathe">呼吸</option></select></label>
+          <label class="setting-row"><span>课程卡表现</span><select v-model="config.courseCardStyle"><option value="weather">实时天气</option><option value="none">无</option><option value="shimmer">微光</option><option value="glow">辉光</option><option value="aurora">极光</option><option value="breathe">呼吸</option></select></label>
           <label class="setting-row"><span>显示天数</span><select v-model.number="config.visibleDays"><option :value="5">5 天</option><option :value="6">6 天</option><option :value="7">7 天</option></select></label>
           <label class="setting-row"><span>星期栏</span><input v-model="config.weekdayBar" type="checkbox" role="switch"></label>
           <label class="setting-row"><span>天气场景</span><input v-model="config.weatherScene" type="checkbox" role="switch"></label>
