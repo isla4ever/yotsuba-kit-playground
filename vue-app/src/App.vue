@@ -337,11 +337,6 @@ function onDesktopPointerDownCapture(event: PointerEvent) {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
   }))
-
-  try {
-    body.setPointerCapture(event.pointerId)
-  }
-  catch {}
 }
 
 function onDesktopPointerMoveCapture(event: PointerEvent) {
@@ -352,6 +347,10 @@ function onDesktopPointerMoveCapture(event: PointerEvent) {
   const deltaY = event.clientY - desktopGesture.startY
   if (!desktopGesture.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) >= 7) {
     desktopGesture.axis = Math.abs(deltaX) > Math.abs(deltaY) * 1.12 ? 'horizontal' : 'vertical'
+    try {
+      desktopGesture.body.setPointerCapture(event.pointerId)
+    }
+    catch {}
   }
   if (desktopGesture.axis) {
     desktopSwiping.value = true
