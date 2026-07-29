@@ -2,7 +2,8 @@
 import type { Course } from '@iyotsuba/schedule-vue'
 import { YsSchedule, YsToday } from '@iyotsuba/schedule-vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { nextTick } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
 
 const termStart = new Date(2026, 6, 20)
 const courses: Course[] = [
@@ -38,5 +39,46 @@ describe('registry package: @iyotsuba/schedule-vue', () => {
     await cell.trigger('pointerup')
     expect(wrapper.emitted('cellSelect')?.[0]).toEqual([2, 3, 3])
     wrapper.unmount()
+  })
+
+  it('keeps inactive overlap cards below the active course during both week transitions', async () => {
+    vi.useFakeTimers()
+    const overlapping: Course[] = [
+      { id: 'odd', name: '体育（单周）', weekday: 4, startSection: 1, endSection: 2, startWeek: 1, endWeek: 16, parity: 'odd' },
+      { id: 'even', name: '线性代数（双周）', weekday: 4, startSection: 1, endSection: 2, startWeek: 2, endWeek: 16, parity: 'even' },
+    ]
+    const wrapper = mount(YsSchedule, {
+      props: { courses: overlapping, week: 1, reduceMotion: false, transition: 'wave' },
+    })
+
+    const assertLayers = () => {
+      for (const layer of ['.ys-schedule__layer--leaving', '.ys-schedule__layer--current']) {
+        const slots = wrapper.findAll(`${layer} .ys-schedule__card-slot`)
+        const active = slots.find(slot => slot.attributes('data-course-active') === 'true')
+        const inactive = slots.find(slot => slot.attributes('data-course-active') === 'false')
+        expect(active?.attributes('style')).toContain('z-index: 2')
+        expect(inactive?.attributes('style')).toContain('z-index: 0')
+        expect(inactive?.attributes('style')).toContain('opacity: 0')
+        expect(inactive?.attributes('style')).toContain('visibility: hidden')
+      }
+    }
+
+    try {
+      await wrapper.setProps({ week: 2 })
+      await nextTick()
+      assertLayers()
+      vi.advanceTimersByTime(600)
+      await nextTick()
+
+      await wrapper.setProps({ week: 1 })
+      await nextTick()
+      assertLayers()
+      vi.advanceTimersByTime(600)
+      await nextTick()
+    }
+    finally {
+      wrapper.unmount()
+      vi.useRealTimers()
+    }
   })
 })
