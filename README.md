@@ -33,7 +33,7 @@ pnpm dev:vue
 | **[yotsuba-kit-playground](https://github.com/isla4ever/yotsuba-kit-playground)** | 当前仓库：Vue / React / 原生 Web 演示与依赖消费验证 |
 | **[yotsuba-kit-flutter](https://github.com/isla4ever/yotsuba-kit-flutter)** | Flutter 组件包、完整应用和 Flutter 演示 |
 
-当前演示基线为 `@iyotsuba/schedule-* 0.7.0`，Vue、React 与 Core 依赖均从 NPM Registry 安装；Flutter 对应版本为 `yotsuba_schedule_kit 0.7.0`。
+当前演示基线为 `@iyotsuba/schedule-* 0.7.2`，Vue、React 与 Core 依赖均从 NPM Registry 安装；Flutter 对应版本为 `yotsuba_schedule_kit 0.7.2`。
 
 ## 演示内容
 
@@ -50,7 +50,7 @@ Vue 与 React 的 Today 默认覆盖 `1x1 / 1x2 / 2x1 / 2x2` 四种尺寸。内�
 
 ## 本地联调与发布验证
 
-仓库默认消费 NPM Registry 中的 `^0.7.0` 正式包，锁文件同时记录每个包的完整性校验。需要联调组件库源码时，可以临时连接相邻的 `yotsuba-kit` 工作树，但联调链接不应提交，也不能作为发版验收结果。
+仓库默认精确消费 NPM Registry 中的 `0.7.2` 正式包，锁文件同时记录每个包的完整性校验。需要联调组件库源码时，可以临时连接相邻的 `yotsuba-kit` 工作树，但联调链接不应提交，也不能作为发版验收结果。
 
 正式发布验收必须从干净安装开始，确认锁文件不存在 `link:` 或 `file:`，再执行消费方测试和 Vue / React 双端构建。只有消费的是 Registry 产物，才能证明包导出、声明文件、跨包依赖和运行时样式真实可用。
 

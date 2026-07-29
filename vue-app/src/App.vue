@@ -921,7 +921,7 @@ function cycleTopBar() {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1180px;
+  max-width: 430px;
   height: 100dvh;
   min-width: 0;
   margin: 0 auto;
@@ -1290,25 +1290,23 @@ function cycleTopBar() {
 
 @keyframes weather-pulse { to { opacity: 0.35; } }
 
-@media (max-width: 540px) {
-  .app { box-shadow: none; }
-  .app-header { grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; min-height: 54px; padding-inline: 10px; }
-  .brand__mark { height: 24px; }
-  .brand__copy strong { font-size: 13px; }
-  .brand__copy small { font-size: 8px; }
-  .weather-button { padding-inline: 7px; }
-  .weather-button small { display: none; }
-  .header-actions { gap: 3px; }
-  .header-actions button { min-width: 33px; height: 34px; }
-  .module-toolbar { gap: 5px; padding-inline: 8px; }
-  .module-toolbar__title { flex: 1 1 44px; min-width: 44px; }
-  .module-toolbar__title small { display: none; }
-  .segmented button { padding-inline: 6px; }
-  .compact-select select { width: 66px; padding-left: 6px; font-size: 10px; }
-  .topbar-switch { width: 34px; padding: 0; }
-  .topbar-switch span { display: none; }
-  .settings-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
+.app { box-shadow: none; }
+.app-header { grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; min-height: 54px; padding-inline: 10px; }
+.brand__mark { height: 24px; }
+.brand__copy strong { font-size: 13px; }
+.brand__copy small { font-size: 8px; }
+.weather-button { padding-inline: 7px; }
+.weather-button small { display: none; }
+.header-actions { gap: 3px; }
+.header-actions button { min-width: 33px; height: 34px; }
+.module-toolbar { gap: 5px; padding-inline: 8px; }
+.module-toolbar__title { flex: 1 1 44px; min-width: 44px; }
+.module-toolbar__title small { display: none; }
+.segmented button { padding-inline: 6px; }
+.compact-select select { width: 66px; padding-left: 6px; font-size: 10px; }
+.topbar-switch { width: 34px; padding: 0; }
+.topbar-switch span { display: none; }
+.settings-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 @media (max-width: 360px) {
   .brand__copy small,

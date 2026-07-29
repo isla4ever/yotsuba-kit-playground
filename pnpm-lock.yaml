@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@iyotsuba/schedule-core':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: 0.7.2
+        version: 0.7.2
       '@iyotsuba/schedule-vue':
-        specifier: ^0.7.1
-        version: 0.7.1(vue@3.5.40(typescript@5.9.3))
+        specifier: 0.7.2
+        version: 0.7.2(vue@3.5.40(typescript@5.9.3))
     devDependencies:
       '@vue/test-utils':
         specifier: ^2.4.6
@@ -31,8 +31,8 @@ importers:
   react-app:
     dependencies:
       '@iyotsuba/schedule-react':
-        specifier: ^0.7.1
-        version: 0.7.1(react@19.2.8)
+        specifier: 0.7.2
+        version: 0.7.2(react@19.2.8)
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.8)
@@ -62,11 +62,11 @@ importers:
   vue-app:
     dependencies:
       '@iyotsuba/schedule-core':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: 0.7.2
+        version: 0.7.2
       '@iyotsuba/schedule-vue':
-        specifier: ^0.7.1
-        version: 0.7.1(vue@3.5.40(typescript@5.9.3))
+        specifier: 0.7.2
+        version: 0.7.2(vue@3.5.40(typescript@5.9.3))
       '@lucide/vue':
         specifier: ^1.27.0
         version: 1.27.0(vue@3.5.40(typescript@5.9.3))
@@ -495,19 +495,19 @@ packages:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
 
-  '@iyotsuba/schedule-core@0.7.1':
-    resolution: {integrity: sha512-hfjRo7MQJTgnvis6ThZ9NGgfBiJ2qACEqde/YR0ZwfR95bjeMDGL707wc7nx4uiEvwozTMs3IeokFofDFoPntw==}
+  '@iyotsuba/schedule-core@0.7.2':
+    resolution: {integrity: sha512-sKI3f6IRGK27rqhVnJAujiTSD4qz/v7BRZ2YfzjNt4sUvOOdXZBLXzo9r4kcv+Ffah6kLhxzg97X2Wm0RUcrMQ==}
 
-  '@iyotsuba/schedule-elements@0.7.1':
-    resolution: {integrity: sha512-WumlvhGX7NasyYoSZupOx1Mu8DCszQRW9XbKOx3X4YCdOMZFnwfp5km66fab3nvp91gUQvMhxJwcNsXean8A0w==}
+  '@iyotsuba/schedule-elements@0.7.2':
+    resolution: {integrity: sha512-CZ20LfKbjkYPc84FQJfBwnn2sdhaMuwHjXxQGVKOhbkKlaVdm+0zNyykVvNFGkFZS9dSGj25IKf8KfoWUrN7XQ==}
 
-  '@iyotsuba/schedule-react@0.7.1':
-    resolution: {integrity: sha512-rhjugWOmDoup9G3Nb8d+r8KITm0eDdT5jLc/rBV7gUArA+y3cZfdwjsZweRtbepa4ELB7LkHM8kU41+q10el5A==}
+  '@iyotsuba/schedule-react@0.7.2':
+    resolution: {integrity: sha512-+VY5GGkbUoX32vtz4tdI+VmnC69AKAv9ka0lstYgieFjrPVZ3mQx1r/9hDit+p20CVjAQ2blB26tbmJJIQubig==}
     peerDependencies:
       react: '>=18'
 
-  '@iyotsuba/schedule-vue@0.7.1':
-    resolution: {integrity: sha512-bj58jOYYsXiRmjlsPc1IxTlsov6/h4jmY6sDZIwFIOh/ps2+DCzAKfjYrY3bYZbjuKdXEl4Q1U6+kjRg8pS2gw==}
+  '@iyotsuba/schedule-vue@0.7.2':
+    resolution: {integrity: sha512-OroJSKpkfdyLbN1GM4DVF0tDowAq91cLUFXYMsBhA5xgIBw0mFGCvUWtUq5JMyzh0Aa7SaOH3UdN2F54Y1Ksvw==}
     peerDependencies:
       vue: ^3.4.0
 
@@ -1785,21 +1785,21 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@iyotsuba/schedule-core@0.7.1': {}
+  '@iyotsuba/schedule-core@0.7.2': {}
 
-  '@iyotsuba/schedule-elements@0.7.1':
+  '@iyotsuba/schedule-elements@0.7.2':
     dependencies:
-      '@iyotsuba/schedule-core': 0.7.1
+      '@iyotsuba/schedule-core': 0.7.2
 
-  '@iyotsuba/schedule-react@0.7.1(react@19.2.8)':
+  '@iyotsuba/schedule-react@0.7.2(react@19.2.8)':
     dependencies:
-      '@iyotsuba/schedule-core': 0.7.1
-      '@iyotsuba/schedule-elements': 0.7.1
+      '@iyotsuba/schedule-core': 0.7.2
+      '@iyotsuba/schedule-elements': 0.7.2
       react: 19.2.8
 
-  '@iyotsuba/schedule-vue@0.7.1(vue@3.5.40(typescript@5.9.3))':
+  '@iyotsuba/schedule-vue@0.7.2(vue@3.5.40(typescript@5.9.3))':
     dependencies:
-      '@iyotsuba/schedule-core': 0.7.1
+      '@iyotsuba/schedule-core': 0.7.2
       vue: 3.5.40(typescript@5.9.3)
 
   '@jridgewell/gen-mapping@0.3.13':
