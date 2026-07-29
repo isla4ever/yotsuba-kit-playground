@@ -191,7 +191,7 @@ const DEFAULT_TODAY_WIDGETS: TodayWidgetConfig[] = [
 ]
 
 const scheduleGuideSteps: GuideStep[] = [
-  ...defaultScheduleGuideSteps,
+  ...defaultScheduleGuideSteps.filter(step => step.id !== 'time-axis'),
   {
     id: 'schedule-layouts',
     target: 'schedule-layout-tools',
