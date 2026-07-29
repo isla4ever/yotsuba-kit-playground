@@ -84,6 +84,24 @@ const SCHEDULE_GUIDE_STORAGE_KEY = 'ys-playground-guide-schedule-v2'
 const TODAY_GUIDE_STORAGE_KEY = 'ys-playground-guide-today-v2'
 const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 const DETAIL_FIELDS: DetailField[] = ['time', 'weeks', 'location', 'teacher', 'weather', 'note', 'materials', 'tasks']
+const DOCS_PREVIEW_PARENT_ORIGIN = (() => {
+  if (window.parent === window || new URLSearchParams(window.location.search).get('preview') !== 'website' || !document.referrer) {
+    return null
+  }
+  try {
+    return new URL(document.referrer).origin
+  }
+  catch {
+    return null
+  }
+})()
+
+function reportEmbeddedGuide(phase: 'step' | 'finish', module: ViewName) {
+  if (!DOCS_PREVIEW_PARENT_ORIGIN) {
+    return
+  }
+  window.parent.postMessage({ source: 'yotsuba-schedule-demo', type: 'guide', phase, module }, DOCS_PREVIEW_PARENT_ORIGIN)
+}
 
 const DEFAULT_CONFIG: PlaygroundConfig = {
   theme: 'light',
@@ -533,6 +551,7 @@ function shareCourse(course: Course) {
 
 function selectView(next: ViewName) {
   scheduleRef.value?.closeSheets()
+  reportEmbeddedGuide('finish', view.value)
   settingsOpen.value = false
   view.value = next
 }
@@ -698,6 +717,8 @@ function cycleTopBar() {
           :sheets="sheetConfig"
           :detail="{ hero: config.detailHero, layout: config.detailLayout, fields: DETAIL_FIELDS, actions: detailActions, adjustable: true }"
           :guide="{ mode: 'spotlight', steps: scheduleGuideSteps, storageKey: SCHEDULE_GUIDE_STORAGE_KEY, autoStart: true }"
+          @guide-step="reportEmbeddedGuide('step', 'schedule')"
+          @guide-finish="reportEmbeddedGuide('finish', 'schedule')"
           @course-add="onCourseAdd"
           @course-update="onCourseUpdate"
           @course-remove="onCourseRemove"
@@ -743,6 +764,8 @@ function cycleTopBar() {
           :guide="{ mode: 'spotlight', steps: defaultTodayGuideSteps, storageKey: TODAY_GUIDE_STORAGE_KEY, autoStart: true }"
           empty-text="暂无信息"
           arrangeable
+          @guide-step="reportEmbeddedGuide('step', 'today')"
+          @guide-finish="reportEmbeddedGuide('finish', 'today')"
         >
           <template #widget-study-load="{ layout }">
             <div class="study-load" :class="`is-${layout.columns}x${layout.rows}`">
