@@ -80,6 +80,7 @@ interface PlaygroundConfig {
 
 const STORAGE = 'ys-playground'
 const DEMO_COURSE_DATA_VERSION = '3'
+const TODAY_LAYOUT_VERSION = '2'
 const SCHEDULE_GUIDE_STORAGE_KEY = 'ys-playground-guide-schedule-v2'
 const TODAY_GUIDE_STORAGE_KEY = 'ys-playground-guide-today-v2'
 const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
@@ -183,11 +184,11 @@ const DEFAULT_TODAY_WIDGETS: TodayWidgetConfig[] = [
   { id: 'next-course', size: '2x1' },
   { id: 'weather', size: '2x2' },
   { id: 'today-timeline', size: '2x1' },
-  { id: 'readiness', size: '2x1' },
-  { id: 'course-tasks', size: '2x1' },
-  { id: 'plans', size: '2x1' },
-  { id: 'study-load', size: '1x2' },
-  { id: 'week-glance', size: '2x2' },
+  { id: 'readiness', size: '1x1' },
+  { id: 'course-tasks', size: '1x1' },
+  { id: 'plans', size: '1x1' },
+  { id: 'week-glance', size: '1x1' },
+  { id: 'study-load', size: '2x1' },
 ]
 
 const scheduleGuideSteps: GuideStep[] = [
@@ -247,7 +248,15 @@ if (storedCourseVersion !== DEMO_COURSE_DATA_VERSION) {
   localStorage.setItem(`${STORAGE}:course-data-version`, DEMO_COURSE_DATA_VERSION)
 }
 const background = ref<{ image?: string, opacity?: number } | null>(load('bg', null))
-const todayWidgets = ref<TodayWidgetConfig[]>(load('today-widgets', DEFAULT_TODAY_WIDGETS))
+const storedTodayLayoutVersion = localStorage.getItem(`${STORAGE}:today-layout-version`)
+const initialTodayWidgets = storedTodayLayoutVersion === TODAY_LAYOUT_VERSION
+  ? load('today-widgets', DEFAULT_TODAY_WIDGETS)
+  : DEFAULT_TODAY_WIDGETS.map(widget => ({ ...widget }))
+const todayWidgets = ref<TodayWidgetConfig[]>(initialTodayWidgets)
+if (storedTodayLayoutVersion !== TODAY_LAYOUT_VERSION) {
+  save('today-widgets', initialTodayWidgets)
+  localStorage.setItem(`${STORAGE}:today-layout-version`, TODAY_LAYOUT_VERSION)
+}
 const config = reactive<PlaygroundConfig>({ ...DEFAULT_CONFIG, ...load<Partial<PlaygroundConfig>>('config', {}) })
 if (!localStorage.getItem(SCHEDULE_GUIDE_STORAGE_KEY)) {
   config.scheduleLayout = 'grid'
@@ -577,6 +586,7 @@ async function openAgendaCourse(courseId: string) {
 function resetConfig() {
   Object.assign(config, DEFAULT_CONFIG)
   todayWidgets.value = DEFAULT_TODAY_WIDGETS.map(widget => ({ ...widget }))
+  localStorage.setItem(`${STORAGE}:today-layout-version`, TODAY_LAYOUT_VERSION)
   notify('演示配置已恢复默认')
 }
 
@@ -1253,6 +1263,30 @@ function cycleTopBar() {
 
 :deep(.stage__schedule .ys-schedule__body) { padding-bottom: 4px; }
 :deep(.ys-sheet__overlay.is-contained) { z-index: 200; }
+
+.app :deep(.ys-weather-glyph) {
+  --ys-weather-sun: #f3b33d;
+  --ys-weather-cloud: #899db4;
+  --ys-weather-cloud-back: #b3c0ce;
+  --ys-weather-precip: #4d8fdc;
+  --ys-weather-accent: #f5c84b;
+}
+.app :deep(.ys-weather-glyph.is-clear) { --ys-weather-sun: #f4ad32; }
+.app :deep(.ys-weather-glyph.is-cloudy) { --ys-weather-sun: #f2b23d; --ys-weather-cloud: #839bb5; --ys-weather-cloud-back: #c1ccd8; }
+.app :deep(.ys-weather-glyph.is-overcast) { --ys-weather-cloud: #74889f; --ys-weather-cloud-back: #aab8c7; }
+.app :deep(.ys-weather-glyph.is-fog) { --ys-weather-cloud: #91a0af; --ys-weather-precip: #aebbc8; }
+.app :deep(.ys-weather-glyph.is-drizzle) { --ys-weather-cloud: #7891aa; --ys-weather-precip: #62a3e7; }
+.app :deep(.ys-weather-glyph.is-rain) { --ys-weather-cloud: #657e9a; --ys-weather-precip: #4b91df; }
+.app :deep(.ys-weather-glyph.is-heavy-rain) { --ys-weather-cloud: #526c8a; --ys-weather-precip: #327fd4; }
+.app :deep(.ys-weather-glyph.is-storm) { --ys-weather-cloud: #626c87; --ys-weather-precip: #4e88d2; --ys-weather-accent: #f4c542; }
+.app :deep(.ys-weather-glyph.is-snow) { --ys-weather-cloud: #8198ad; --ys-weather-precip: #77bce5; }
+.app :deep(.ys-weather-glyph.is-neutral) { --ys-weather-cloud: #8b98a7; }
+.app :deep(.ys-weather-glyph__rays),
+.app :deep(.ys-weather-glyph__sun) { color: var(--ys-weather-sun); }
+.app :deep(.ys-weather-glyph__cloud-back) { color: var(--ys-weather-cloud-back); }
+.app :deep(.ys-weather-glyph__cloud) { color: var(--ys-weather-cloud); }
+.app :deep(.ys-weather-glyph__fall) { color: var(--ys-weather-precip); }
+.app :deep(.ys-weather-glyph__accent) { color: var(--ys-weather-accent); }
 
 @keyframes weather-pulse { to { opacity: 0.35; } }
 
