@@ -267,6 +267,125 @@ const editable = ref(false)
 const settingsOpen = ref(false)
 const toast = ref('')
 const scheduleRef = ref<InstanceType<typeof YsSchedule> | null>(null)
+const websitePreview = new URLSearchParams(window.location.search).get('preview') === 'website'
+const desktopSwiping = ref(false)
+
+interface DesktopGestureState {
+  pointerId: number
+  startX: number
+  startY: number
+  startScrollTop: number
+  axis: 'horizontal' | 'vertical' | null
+  body: HTMLElement
+}
+
+let desktopGesture: DesktopGestureState | null = null
+let suppressDesktopClick = false
+let suppressDesktopClickTimer: number | undefined
+
+function resetDesktopGesture() {
+  if (desktopGesture?.body.hasPointerCapture(desktopGesture.pointerId)) {
+    desktopGesture.body.releasePointerCapture(desktopGesture.pointerId)
+  }
+  desktopGesture = null
+  desktopSwiping.value = false
+}
+
+function onDesktopPointerDownCapture(event: PointerEvent) {
+  if (
+    !websitePreview
+    || event.pointerType !== 'mouse'
+    || event.button !== 0
+    || view.value !== 'schedule'
+    || config.scheduleLayout !== 'grid'
+    || editable.value
+  ) {
+    return
+  }
+  const target = event.target as HTMLElement | null
+  if (target?.closest('.ys-sheet, input, textarea, select')) {
+    return
+  }
+  const host = event.currentTarget as HTMLElement
+  const body = host.querySelector<HTMLElement>('.ys-schedule__body')
+  if (!body) {
+    return
+  }
+
+  desktopGesture = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startScrollTop: body.scrollTop,
+    axis: null,
+    body,
+  }
+
+  body.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    pointerId: event.pointerId,
+    pointerType: 'touch',
+    isPrimary: event.isPrimary,
+    clientX: event.clientX,
+    clientY: event.clientY,
+    button: event.button,
+    buttons: event.buttons,
+    ctrlKey: event.ctrlKey,
+    metaKey: event.metaKey,
+    shiftKey: event.shiftKey,
+    altKey: event.altKey,
+  }))
+
+  try {
+    body.setPointerCapture(event.pointerId)
+  }
+  catch {}
+}
+
+function onDesktopPointerMoveCapture(event: PointerEvent) {
+  if (!desktopGesture || event.pointerId !== desktopGesture.pointerId) {
+    return
+  }
+  const deltaX = event.clientX - desktopGesture.startX
+  const deltaY = event.clientY - desktopGesture.startY
+  if (!desktopGesture.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) >= 7) {
+    desktopGesture.axis = Math.abs(deltaX) > Math.abs(deltaY) * 1.12 ? 'horizontal' : 'vertical'
+  }
+  if (desktopGesture.axis) {
+    desktopSwiping.value = true
+    event.preventDefault()
+  }
+  if (desktopGesture.axis === 'vertical') {
+    desktopGesture.body.scrollTop = desktopGesture.startScrollTop - deltaY
+  }
+}
+
+function onDesktopPointerEndCapture(event: PointerEvent) {
+  if (!desktopGesture || event.pointerId !== desktopGesture.pointerId) {
+    return
+  }
+  if (desktopGesture.axis && event.type !== 'pointercancel') {
+    suppressDesktopClick = true
+    window.clearTimeout(suppressDesktopClickTimer)
+    suppressDesktopClickTimer = window.setTimeout(() => {
+      suppressDesktopClick = false
+    }, 0)
+    event.preventDefault()
+  }
+  resetDesktopGesture()
+}
+
+function onDesktopClickCapture(event: MouseEvent) {
+  if (!suppressDesktopClick) {
+    return
+  }
+  suppressDesktopClick = false
+  window.clearTimeout(suppressDesktopClickTimer)
+  event.preventDefault()
+  event.stopImmediatePropagation()
+}
 
 const termStart = (() => {
   const now = new Date()
@@ -701,7 +820,18 @@ function cycleTopBar() {
         </button>
       </section>
 
-      <div class="stage__content">
+      <div
+        class="stage__content"
+        :class="{
+          'is-desktop-gesture-ready': websitePreview,
+          'is-desktop-swiping': desktopSwiping,
+        }"
+        @pointerdown.capture="onDesktopPointerDownCapture"
+        @pointermove.capture="onDesktopPointerMoveCapture"
+        @pointerup.capture="onDesktopPointerEndCapture"
+        @pointercancel.capture="onDesktopPointerEndCapture"
+        @click.capture="onDesktopClickCapture"
+      >
         <YsSchedule
           v-if="view === 'schedule' && config.scheduleLayout === 'grid'"
           ref="scheduleRef"
@@ -1025,6 +1155,12 @@ function cycleTopBar() {
 .stage__today { width: 100%; max-width: 100%; height: 100%; min-width: 0; }
 .stage__today { overflow-y: auto; scrollbar-width: none; }
 .stage__today::-webkit-scrollbar { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .stage__content.is-desktop-gesture-ready :deep(.ys-schedule__body) { cursor: grab; }
+  .stage__content.is-desktop-swiping,
+  .stage__content.is-desktop-swiping :deep(*) { cursor: grabbing !important; user-select: none; }
+}
 
 :deep(.stage__schedule.ys-schedule) {
   background: color-mix(in srgb, var(--ys-canvas) 76%, transparent);
