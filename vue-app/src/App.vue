@@ -8,27 +8,29 @@ import type {
   DetailField,
   DetailHero,
   DetailLayout,
+  GuideStep,
   PaletteName,
   ScheduleDensity,
   SheetPlacement,
   TodayWidgetConfig,
+  WeatherKind,
   WeatherSnapshot,
 } from '@iyotsuba/schedule-vue'
 import {
   computeReminders,
-  createShareCode,
   exportICS,
   isCourseActive,
   parseShareCode,
   STANDARD_COURSE_TIMES,
 } from '@iyotsuba/schedule-core'
 import { createOpenMeteoProvider } from '@iyotsuba/schedule-core/weather/open-meteo'
-import { defaultScheduleGuideSteps, YsSchedule, YsSheet, YsToday } from '@iyotsuba/schedule-vue'
+import { defaultScheduleGuideSteps, defaultTodayGuideSteps, YsSchedule, YsSheet, YsToday, YsWeatherScene } from '@iyotsuba/schedule-vue'
 import {
   CalendarCheck2,
   CalendarDays,
   CalendarSync,
   Check,
+  CircleHelp,
   Cloud,
   CloudFog,
   CloudLightning,
@@ -43,12 +45,10 @@ import {
   Pencil,
   RotateCcw,
   Settings2,
-  Share2,
-  Sparkles,
   Sun,
   Upload,
 } from '@lucide/vue'
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 
 type ViewName = 'schedule' | 'today'
 type ScheduleLayout = 'grid' | 'list'
@@ -79,6 +79,9 @@ interface PlaygroundConfig {
 }
 
 const STORAGE = 'ys-playground'
+const DEMO_COURSE_DATA_VERSION = '3'
+const SCHEDULE_GUIDE_STORAGE_KEY = 'ys-playground-guide-schedule-v2'
+const TODAY_GUIDE_STORAGE_KEY = 'ys-playground-guide-today-v2'
 const WEEKDAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 const DETAIL_FIELDS: DetailField[] = ['time', 'weeks', 'location', 'teacher', 'weather', 'note', 'materials', 'tasks']
 
@@ -112,28 +115,83 @@ const seed: Course[] = [
     tasks: [{ id: 'math-task', title: '完成第三章课后题', dueAt: '2026-08-02T21:00:00+08:00', priority: 'high' }],
     note: '课前完成本周习题',
   },
-  { id: 'ds', name: '数据结构', teacher: '周老师', location: '教2-105', weekday: 1, startSection: 5, endSection: 6, startWeek: 1, endWeek: 20 },
+  {
+    id: 'ds', name: '数据结构', teacher: '周老师', location: '教2-105', weekday: 1, startSection: 5, endSection: 6, startWeek: 1, endWeek: 20,
+    materials: [{ name: '实验讲义', kind: 'document' }],
+    tasks: [{ id: 'ds-task', title: '完成二叉树实验', priority: 'medium' }],
+  },
+  {
+    id: 'probability', name: '概率论', teacher: '王老师', location: '教1-408', weekday: 1, startSection: 3, endSection: 4, startWeek: 1, endWeek: 18,
+    books: [{ id: 'probability-book', title: '概率论与数理统计', required: true }],
+    tasks: [{ id: 'probability-task', title: '整理条件概率笔记' }],
+  },
+  {
+    id: 'signal', name: '数字信号处理', teacher: '赵老师', location: '电信楼206', weekday: 1, startSection: 7, endSection: 8, startWeek: 1, endWeek: 16,
+    materials: [{ name: '耳机', kind: 'equipment' }, { name: '实验数据', kind: 'document' }],
+    tasks: [{ id: 'signal-task', title: '导出频谱分析图', priority: 'high' }],
+  },
+  {
+    id: 'ai', name: '人工智能导论', teacher: '许老师', location: '教3-210', weekday: 1, startSection: 10, endSection: 11, startWeek: 1, endWeek: 16,
+    materials: [{ name: '电脑', kind: 'device' }],
+    tasks: [{ id: 'ai-task', title: '阅读注意力机制论文' }],
+  },
+  { id: 'os', name: '操作系统', teacher: '何老师', location: '教2-302', weekday: 2, startSection: 1, endSection: 2, startWeek: 1, endWeek: 18 },
   { id: 'en', name: '大学英语', teacher: 'Lily', location: '外语楼302', weekday: 2, startSection: 3, endSection: 4, startWeek: 1, endWeek: 20 },
+  { id: 'database', name: '数据库系统', teacher: '郑老师', location: '机房C', weekday: 2, startSection: 5, endSection: 6, startWeek: 1, endWeek: 18 },
+  { id: 'ml', name: '机器学习', teacher: '秦老师', location: '教3-406', weekday: 2, startSection: 7, endSection: 8, startWeek: 3, endWeek: 16 },
+  { id: 'cloud', name: '云计算实践', teacher: '叶老师', location: '机房B', weekday: 2, startSection: 10, endSection: 11, startWeek: 1, endWeek: 16 },
+  { id: 'network', name: '计算机网络', teacher: '曹老师', location: '教2-204', weekday: 3, startSection: 1, endSection: 2, startWeek: 1, endWeek: 18 },
+  { id: 'hci', name: '人机交互', teacher: '宋老师', location: '创新楼B12', weekday: 3, startSection: 3, endSection: 4, startWeek: 1, endWeek: 16 },
   {
     id: 'prog', name: '程序设计', teacher: '吴老师', location: '机房A', weekday: 3, startSection: 5, endSection: 6, startWeek: 1, endWeek: 20,
     materials: [{ name: '电脑', kind: 'device' }, { name: 'Type-C 转接头', kind: 'equipment' }],
     tasks: [{ id: 'prog-task', title: '提交课程管理小程序', done: false }],
   },
+  { id: 'security', name: '信息安全', teacher: '邵老师', location: '教3-108', weekday: 3, startSection: 7, endSection: 8, startWeek: 1, endWeek: 18 },
   { id: 'pe', name: '体育（单周）', location: '东操场', weekday: 4, startSection: 1, endSection: 2, startWeek: 1, endWeek: 16, parity: 'odd', materials: ['运动鞋'] },
   { id: 'la', name: '线性代数（双周）', teacher: '彭老师', location: '教1-305', weekday: 4, startSection: 1, endSection: 2, startWeek: 2, endWeek: 16, parity: 'even' },
+  { id: 'economics', name: '经济学原理', teacher: '邓老师', location: '教1-109', weekday: 4, startSection: 3, endSection: 4, startWeek: 1, endWeek: 16 },
+  { id: 'design', name: '交互设计工作坊', teacher: '罗老师', location: '创客空间', weekday: 4, startSection: 5, endSection: 6, startWeek: 2, endWeek: 14 },
+  { id: 'prototype', name: '产品原型实践', teacher: '唐老师', location: '创新工坊', weekday: 4, startSection: 7, endSection: 8, startWeek: 1, endWeek: 16 },
+  { id: 'compiler', name: '编译原理', teacher: '任老师', location: '教2-401', weekday: 5, startSection: 1, endSection: 2, startWeek: 1, endWeek: 18 },
   { id: 'phy', name: '大学物理', teacher: '林老师', location: '理科楼210', weekday: 5, startSection: 3, endSection: 4, startWeek: 1, endWeek: 16 },
+  { id: 'robotics', name: '机器人实践', teacher: '顾老师', location: '实验楼210', weekday: 5, startSection: 5, endSection: 6, startWeek: 3, endWeek: 15 },
   { id: 'chem', name: '化学实验', teacher: '孙老师', location: '实验楼404', weekday: 5, startSection: 7, endSection: 9, startWeek: 1, endWeek: 8, materials: ['实验服', '护目镜'] },
+  { id: 'open-studio', name: '开放工作室', teacher: '项目导师', location: '创客空间', weekday: 6, startSection: 3, endSection: 4, startWeek: 1, endWeek: 12 },
+  { id: 'reading', name: '文献研读', teacher: '学习小组', location: '图书馆B区', weekday: 7, startSection: 5, endSection: 6, startWeek: 1, endWeek: 20, custom: true },
 ]
 
 const DEFAULT_TODAY_WIDGETS: TodayWidgetConfig[] = [
   { id: 'next-course', size: '2x1' },
-  { id: 'weather', size: '1x1' },
+  { id: 'weather', size: '2x2' },
   { id: 'today-timeline', size: '2x1' },
   { id: 'readiness', size: '2x1' },
   { id: 'course-tasks', size: '2x1' },
   { id: 'plans', size: '2x1' },
   { id: 'study-load', size: '1x2' },
   { id: 'week-glance', size: '2x2' },
+]
+
+const scheduleGuideSteps: GuideStep[] = [
+  ...defaultScheduleGuideSteps,
+  {
+    id: 'schedule-layouts',
+    target: 'schedule-layout-tools',
+    title: '同一份课表，两种读法',
+    body: '周视图适合把握整周节奏，列表视图更适合按天快速扫描课程。',
+  },
+  {
+    id: 'schedule-edit',
+    target: 'schedule-edit',
+    title: '需要时再进入编辑',
+    body: '打开编辑模式后，可以点按空白时间添加课程，也可以继续修改已有课程。',
+  },
+  {
+    id: 'schedule-to-today',
+    target: 'dock-today',
+    title: '接着看看今天',
+    body: '今日模块会把这一周的数据重新组织成课程、任务、计划与天气看板。',
+  },
 ]
 
 const STUDY_LOAD = [
@@ -161,11 +219,21 @@ function save(key: string, value: unknown) {
   localStorage.setItem(`${STORAGE}:${key}`, JSON.stringify(value))
 }
 
-const courses = ref<Course[]>(load('courses', seed))
-const dayPlans = ref<DayPlanMap>(load('plans', {}))
+const storedCourseVersion = localStorage.getItem(`${STORAGE}:course-data-version`)
+const initialCourses = storedCourseVersion === DEMO_COURSE_DATA_VERSION
+  ? load('courses', seed)
+  : seed
+const courses = ref<Course[]>(initialCourses)
+if (storedCourseVersion !== DEMO_COURSE_DATA_VERSION) {
+  save('courses', seed)
+  localStorage.setItem(`${STORAGE}:course-data-version`, DEMO_COURSE_DATA_VERSION)
+}
 const background = ref<{ image?: string, opacity?: number } | null>(load('bg', null))
 const todayWidgets = ref<TodayWidgetConfig[]>(load('today-widgets', DEFAULT_TODAY_WIDGETS))
 const config = reactive<PlaygroundConfig>({ ...DEFAULT_CONFIG, ...load<Partial<PlaygroundConfig>>('config', {}) })
+if (!localStorage.getItem(SCHEDULE_GUIDE_STORAGE_KEY)) {
+  config.scheduleLayout = 'grid'
+}
 const week = ref(1)
 const view = ref<ViewName>('schedule')
 const editable = ref(false)
@@ -184,6 +252,19 @@ const demoNow = (() => {
   mondayMorning.setHours(7, 35, 0, 0)
   return mondayMorning
 })()
+const demoDateKey = [
+  demoNow.getFullYear(),
+  String(demoNow.getMonth() + 1).padStart(2, '0'),
+  String(demoNow.getDate()).padStart(2, '0'),
+].join('-')
+const dayPlans = ref<DayPlanMap>(load('plans', {
+  [demoDateKey]: [
+    { id: 'review', text: '复习概率论第三章', done: false },
+    { id: 'lab', text: '提交数据结构实验报告', done: true },
+    { id: 'meeting', text: '确认课程项目分工', done: false },
+    { id: 'reading', text: '完成注意力机制论文速读', done: false },
+  ],
+}))
 
 watch(config, value => save('config', value), { deep: true })
 watch(todayWidgets, value => save('today-widgets', value), { deep: true })
@@ -239,9 +320,64 @@ function onBackgroundChange(url: string | null) {
   save('bg', background.value)
 }
 
-const weather = ref<WeatherSnapshot | null>(null)
-const weatherState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
-const weatherLocation = ref('成都')
+const DEMO_WEATHER_KINDS: WeatherKind[] = [
+  'clear', 'cloudy', 'overcast', 'fog', 'drizzle', 'rain', 'heavy-rain', 'storm', 'snow',
+]
+const DEMO_WEATHER_DAY_OFFSETS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+const DEMO_WEATHER_TIMES = ['08:00', '10:00', '14:30', '16:20', '18:10', '19:30']
+const DEMO_HOURLY_KINDS: WeatherKind[][] = [
+  ['clear', 'cloudy', 'drizzle', 'snow', 'rain', 'overcast'],
+  ['snow', 'clear', 'cloudy', 'fog', 'rain', 'storm'],
+  ['cloudy', 'rain', 'clear', 'snow', 'overcast', 'fog'],
+  ['fog', 'clear', 'drizzle', 'storm', 'cloudy', 'rain'],
+  ['snow', 'overcast', 'clear', 'heavy-rain', 'fog', 'cloudy'],
+]
+const DEMO_WEATHER_LABELS: Record<WeatherKind, string> = {
+  clear: '晴',
+  cloudy: '多云',
+  overcast: '阴',
+  fog: '雾',
+  drizzle: '小雨',
+  rain: '中雨',
+  'heavy-rain': '大雨',
+  storm: '雷阵雨',
+  snow: '雪',
+  neutral: '天气',
+}
+const demoWeather: WeatherSnapshot = {
+  current: { kind: 'clear', temperatureC: 26, label: '晴' },
+  daily: DEMO_WEATHER_KINDS.map((kind, index) => {
+    const date = new Date(termStart)
+    date.setDate(date.getDate() + DEMO_WEATHER_DAY_OFFSETS[index]!)
+    return {
+      date: [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-'),
+      kind,
+      highC: 28 - index,
+      lowC: 20 - Math.floor(index / 2),
+      label: DEMO_WEATHER_LABELS[kind],
+    }
+  }),
+  hourly: DEMO_WEATHER_DAY_OFFSETS.flatMap((dayOffset, dayIndex) => {
+    const date = new Date(termStart)
+    date.setDate(date.getDate() + dayOffset)
+    const dateKey = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
+    const kinds = DEMO_HOURLY_KINDS[dayIndex % DEMO_HOURLY_KINDS.length]!
+    return DEMO_WEATHER_TIMES.map((time, timeIndex) => {
+      const kind = kinds[timeIndex]!
+      return {
+        time: `${dateKey}T${time}`,
+        kind,
+        temperatureC: 25 - dayIndex - Math.floor(timeIndex / 2),
+        label: DEMO_WEATHER_LABELS[kind],
+      }
+    })
+  }),
+  updatedAt: Date.now(),
+}
+
+const weather = ref<WeatherSnapshot | null>(demoWeather)
+const weatherState = ref<'idle' | 'loading' | 'ready' | 'error'>('ready')
+const weatherLocation = ref('分时天气演示')
 
 function locate(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
@@ -257,46 +393,37 @@ function locate(): Promise<GeolocationPosition> {
   })
 }
 
-async function refreshWeather(useCurrentLocation = false) {
+async function refreshWeather() {
   if (weatherState.value === 'loading') {
     return
   }
   weatherState.value = 'loading'
-  let latitude = 30.57
-  let longitude = 104.06
-  let locationLabel = '成都'
-
-  if (useCurrentLocation) {
-    notify('正在获取当前位置天气')
-    try {
-      const position = await locate()
-      latitude = position.coords.latitude
-      longitude = position.coords.longitude
-      locationLabel = '当前位置'
-    }
-    catch {
-      weatherState.value = weather.value ? 'ready' : 'error'
-      notify('未能获取位置，请检查浏览器定位权限')
-      return
-    }
+  notify('正在获取当前位置天气')
+  let position: GeolocationPosition
+  try {
+    position = await locate()
+  }
+  catch {
+    weatherState.value = 'ready'
+    notify('未能获取位置，继续展示模拟天气')
+    return
   }
 
   try {
-    const provider = createOpenMeteoProvider({ latitude, longitude })
+    const provider = createOpenMeteoProvider({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    })
     weather.value = await provider.getSnapshot()
-    weatherLocation.value = locationLabel
+    weatherLocation.value = '当前位置'
     weatherState.value = 'ready'
-    if (useCurrentLocation) {
-      notify('当前位置天气已更新')
-    }
+    notify('当前位置天气已更新')
   }
   catch {
-    weatherState.value = 'error'
-    notify('天气服务暂时不可用')
+    weatherState.value = 'ready'
+    notify('天气服务暂时不可用，继续展示模拟天气')
   }
 }
-
-onMounted(() => refreshWeather(false))
 
 const weatherKind = computed(() => weather.value?.current?.kind ?? 'neutral')
 const weatherTemperature = computed(() => {
@@ -308,10 +435,10 @@ const selectedCardEffect = computed<CardEffect>(() =>
 )
 const selectedWeatherCard = computed(() => ({
   enabled: true,
-  glyph: true,
+  glyph: false,
   background: config.courseCardStyle === 'weather',
-  label: true,
-  intensity: 0.72,
+  label: false,
+  intensity: 0.66,
 }))
 const rowHeight = computed(() => config.density === 'minimal' ? 48 : config.density === 'rich' ? 64 : 56)
 const detailActions = computed<DetailAction[]>(() => {
@@ -330,7 +457,7 @@ const sheetConfig = computed(() => ({
     background: 'center' as const,
   },
   glass: config.sheetGlass,
-  contained: true,
+  contained: false,
   adjustable: true,
 }))
 const appVars = computed<Record<string, string>>(() => config.theme === 'dark'
@@ -384,10 +511,6 @@ async function copyText(text: string, success: string) {
   }
 }
 
-function copyShareCode() {
-  return copyText(createShareCode(courses.value), '课表分享码已复制')
-}
-
 function importShareCode() {
   const code = window.prompt('粘贴课表分享码（YSK1:…）')
   if (!code) {
@@ -409,8 +532,21 @@ function shareCourse(course: Course) {
 }
 
 function selectView(next: ViewName) {
+  scheduleRef.value?.closeSheets()
   settingsOpen.value = false
   view.value = next
+}
+
+function closeSettingsThen(action: () => void) {
+  settingsOpen.value = false
+  window.setTimeout(action, 300)
+}
+
+async function startScheduleGuide() {
+  settingsOpen.value = false
+  config.scheduleLayout = 'grid'
+  await nextTick()
+  scheduleRef.value?.startGuide()
 }
 
 async function openAgendaCourse(courseId: string) {
@@ -441,6 +577,16 @@ function cycleTopBar() {
 
 <template>
   <div class="app" :class="`is-${config.theme}`" :style="appVars">
+    <Transition name="app-weather-scene" mode="out-in">
+      <YsWeatherScene
+        v-if="config.weatherScene && weatherKind !== 'neutral'"
+        :key="weatherKind"
+        class="app__weather-scene"
+        :kind="weatherKind"
+        :dark="config.theme === 'dark'"
+        :intensity="0.76"
+      />
+    </Transition>
     <header v-if="config.showHeader" class="app-header">
       <div class="brand">
         <span class="brand__mark" aria-hidden="true" />
@@ -457,7 +603,7 @@ function cycleTopBar() {
         :class="{ 'is-loading': weatherState === 'loading' }"
         :aria-label="weatherState === 'loading' ? '正在获取天气' : '使用当前位置更新天气'"
         :title="weatherState === 'loading' ? '正在获取天气' : '使用当前位置更新天气'"
-        @click="refreshWeather(true)"
+        @click="refreshWeather"
       >
         <LocateFixed v-if="weatherState === 'loading'" :size="17" :stroke-width="1.8" aria-hidden="true" />
         <Sun v-else-if="weatherKind === 'clear'" :size="17" :stroke-width="1.8" aria-hidden="true" />
@@ -474,9 +620,6 @@ function cycleTopBar() {
         <button type="button" aria-label="同步到日历" title="同步到日历" @click="downloadICS('日历文件已生成')">
           <CalendarSync :size="17" aria-hidden="true" />
         </button>
-        <button type="button" aria-label="分享课表" title="分享课表" @click="copyShareCode">
-          <Share2 :size="17" aria-hidden="true" />
-        </button>
       </div>
     </header>
 
@@ -487,7 +630,7 @@ function cycleTopBar() {
           <small v-if="nextReminder">{{ nextReminder.course.name }} · {{ String(nextReminder.at.getHours()).padStart(2, '0') }}:{{ String(nextReminder.at.getMinutes()).padStart(2, '0') }}</small>
         </div>
 
-        <div class="segmented" aria-label="课表布局">
+        <div class="segmented" data-ys="schedule-layout-tools" aria-label="课表布局">
           <button type="button" :aria-pressed="config.scheduleLayout === 'grid'" :class="{ on: config.scheduleLayout === 'grid' }" title="周视图" @click="config.scheduleLayout = 'grid'">
             <Grid2X2 :size="15" aria-hidden="true" /><span>周视图</span>
           </button>
@@ -519,7 +662,11 @@ function cycleTopBar() {
           <span>{{ topBarLabels[config.topBar] }}</span>
         </button>
 
-        <button type="button" class="icon-button" :class="{ on: editable }" :aria-label="editable ? '完成编辑' : '编辑课表'" :title="editable ? '完成编辑' : '编辑课表'" @click="editable = !editable">
+        <button type="button" class="icon-button" aria-label="查看课表引导" title="查看课表引导" @click="startScheduleGuide">
+          <CircleHelp :size="17" aria-hidden="true" />
+        </button>
+
+        <button type="button" class="icon-button" :class="{ on: editable }" data-ys="schedule-edit" :aria-label="editable ? '完成编辑' : '编辑课表'" :title="editable ? '完成编辑' : '编辑课表'" @click="editable = !editable">
           <Check v-if="editable" :size="17" aria-hidden="true" />
           <Pencil v-else :size="17" aria-hidden="true" />
         </button>
@@ -547,10 +694,10 @@ function cycleTopBar() {
           :transition="config.transition"
           :card-effect="selectedCardEffect"
           :weather-card="selectedWeatherCard"
-          :weather-scene="config.weatherScene"
+          :weather-scene="false"
           :sheets="sheetConfig"
           :detail="{ hero: config.detailHero, layout: config.detailLayout, fields: DETAIL_FIELDS, actions: detailActions, adjustable: true }"
-          :guide="{ mode: 'walkthrough', steps: defaultScheduleGuideSteps, storageKey: 'ys-playground-guide' }"
+          :guide="{ mode: 'spotlight', steps: scheduleGuideSteps, storageKey: SCHEDULE_GUIDE_STORAGE_KEY, autoStart: true }"
           @course-add="onCourseAdd"
           @course-update="onCourseUpdate"
           @course-remove="onCourseRemove"
@@ -592,7 +739,8 @@ function cycleTopBar() {
           :weather="weather"
           :day-plans="dayPlans"
           :theme="config.theme"
-          :weather-scene="config.weatherScene"
+          :weather-scene="false"
+          :guide="{ mode: 'spotlight', steps: defaultTodayGuideSteps, storageKey: TODAY_GUIDE_STORAGE_KEY, autoStart: true }"
           empty-text="暂无信息"
           arrangeable
         >
@@ -639,7 +787,7 @@ function cycleTopBar() {
         <CalendarDays :size="20" aria-hidden="true" />
         <span v-if="config.showDockLabels">课表</span>
       </button>
-      <button type="button" :class="{ on: view === 'today' && !settingsOpen }" :aria-current="view === 'today' && !settingsOpen ? 'page' : undefined" @click="selectView('today')">
+      <button type="button" :class="{ on: view === 'today' && !settingsOpen }" data-ys="dock-today" :aria-current="view === 'today' && !settingsOpen ? 'page' : undefined" @click="selectView('today')">
         <CalendarCheck2 :size="20" aria-hidden="true" />
         <span v-if="config.showDockLabels">今日</span>
       </button>
@@ -656,7 +804,6 @@ function cycleTopBar() {
       :vars="appVars"
       :placement="config.sheetPlacement"
       :glass="config.sheetGlass"
-      contained
       adjustable
       @close="settingsOpen = false"
     >
@@ -709,10 +856,9 @@ function cycleTopBar() {
         </section>
 
         <section class="settings-group settings-group--actions">
-          <h3>数据与引导</h3>
+          <h3>数据</h3>
           <div class="settings-actions">
-            <button type="button" @click="scheduleRef?.openBackgroundPicker(); settingsOpen = false"><Image :size="16" aria-hidden="true" />背景</button>
-            <button type="button" @click="scheduleRef?.startGuide(); settingsOpen = false"><Sparkles :size="16" aria-hidden="true" />引导</button>
+            <button type="button" @click="closeSettingsThen(() => scheduleRef?.openBackgroundPicker())"><Image :size="16" aria-hidden="true" />背景</button>
             <button type="button" @click="importShareCode"><Upload :size="16" aria-hidden="true" />导入</button>
           </div>
         </section>
@@ -753,7 +899,20 @@ function cycleTopBar() {
   isolation: isolate;
 }
 
+.app__weather-scene {
+  z-index: 0;
+  opacity: 0.9;
+}
+
+.app-weather-scene-enter-active,
+.app-weather-scene-leave-active {
+  transition: opacity 720ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.app-weather-scene-enter-from,
+.app-weather-scene-leave-to { opacity: 0; }
+
 .app-header {
+  position: relative;
   z-index: 20;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -761,7 +920,8 @@ function cycleTopBar() {
   align-items: center;
   min-height: 58px;
   padding: 8px 14px;
-  background: color-mix(in srgb, var(--ys-surface-1) 94%, transparent);
+  background: color-mix(in srgb, var(--ys-surface-1) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.08);
   border-bottom: 1px solid var(--ys-border);
 }
 
@@ -785,15 +945,23 @@ function cycleTopBar() {
   background: var(--ys-surface-2);
   border: 1px solid var(--ys-border);
   border-radius: 7px;
+  line-height: 0;
 }
+
+.weather-button svg,
+.header-actions button svg,
+.icon-button svg { display: block; }
 
 .topbar-switch {
   display: inline-flex;
   gap: 5px;
+  align-items: center;
+  justify-content: center;
   width: auto;
   padding: 0 8px;
   font-size: 10px;
   font-weight: 650;
+  line-height: 1;
 }
 
 .weather-button {
@@ -803,6 +971,7 @@ function cycleTopBar() {
   padding: 0 9px;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1;
 }
 .weather-button small { font-size: 9px; font-weight: 500; color: var(--ys-text-3); }
 .weather-button.is-loading svg { animation: weather-pulse 900ms ease-in-out infinite alternate; }
@@ -817,12 +986,24 @@ function cycleTopBar() {
 .dock button:focus-visible,
 .segmented button:focus-visible { outline: 3px solid color-mix(in srgb, var(--ys-accent) 35%, transparent); outline-offset: 2px; }
 
-.stage { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.stage { position: relative; z-index: 1; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
 .stage__content { position: relative; flex: 1; min-width: 0; min-height: 0; padding-bottom: 78px; overflow: hidden; }
 .stage__schedule,
 .stage__today { width: 100%; max-width: 100%; height: 100%; min-width: 0; }
 .stage__today { overflow-y: auto; scrollbar-width: none; }
 .stage__today::-webkit-scrollbar { display: none; }
+
+:deep(.stage__schedule.ys-schedule) {
+  background: color-mix(in srgb, var(--ys-canvas) 76%, transparent);
+}
+:deep(.stage__schedule .ys-schedule__weekday-bar),
+:deep(.stage__schedule .ys-topbar) {
+  background: color-mix(in srgb, var(--ys-surface-1) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.05);
+}
+:deep(.stage__today.ys-today) {
+  background: color-mix(in srgb, var(--ys-canvas) 60%, transparent);
+}
 
 .study-load { display: flex; flex-direction: column; height: 100%; min-width: 0; }
 .study-load__head { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
@@ -848,6 +1029,7 @@ function cycleTopBar() {
 .study-load.is-2x1 .study-load__chart { margin-top: 5px; }
 
 .module-toolbar {
+  position: relative;
   z-index: 12;
   display: flex;
   gap: 8px;
@@ -855,7 +1037,8 @@ function cycleTopBar() {
   min-width: 0;
   min-height: 48px;
   padding: 6px 12px;
-  background: var(--ys-surface-1);
+  background: color-mix(in srgb, var(--ys-surface-1) 82%, transparent);
+  backdrop-filter: blur(16px) saturate(1.06);
   border-bottom: 1px solid var(--ys-border);
 }
 .module-toolbar__title { display: flex; flex: 1; flex-direction: column; min-width: 70px; }

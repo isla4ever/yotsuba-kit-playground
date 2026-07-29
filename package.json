@@ -11,8 +11,8 @@
     "build": "pnpm -r build"
   },
   "dependencies": {
-    "@iyotsuba/schedule-core": "^0.6.1",
-    "@iyotsuba/schedule-vue": "^0.6.1"
+    "@iyotsuba/schedule-core": "^0.7.0",
+    "@iyotsuba/schedule-vue": "^0.7.0"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.6",

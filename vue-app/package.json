@@ -7,8 +7,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@iyotsuba/schedule-core": "^0.6.1",
-    "@iyotsuba/schedule-vue": "^0.6.1",
+    "@iyotsuba/schedule-core": "^0.7.0",
+    "@iyotsuba/schedule-vue": "^0.7.0",
     "@lucide/vue": "^1.27.0",
     "vue": "^3.5.13"
   },

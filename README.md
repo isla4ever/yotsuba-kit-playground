@@ -14,6 +14,8 @@
 
 文档官网：[isla4ever.github.io/yotsuba-kit](https://isla4ever.github.io/yotsuba-kit/)
 
+当前演示基线为 `@iyotsuba/schedule-* 0.7.0`，Vue、React 与 Core 依赖均从 NPM Registry 安装；Flutter 对应版本为 `yotsuba_schedule_kit 0.7.0`。
+
 ## 演示内容
 
 | 目录 | 内容 |
@@ -45,9 +47,15 @@ pnpm build
 
 ## 本地联调与发布验证
 
-开发期的 Vue / React 应用通过 `link:` 连接相邻的 `yotsuba-kit` 工作树，便于在 NPM 发版前验证 current main API。
+仓库默认消费 NPM Registry 中的 `^0.7.0` 正式包，锁文件同时记录每个包的完整性校验。需要联调组件库源码时，可以临时连接相邻的 `yotsuba-kit` 工作树，但联调链接不应提交，也不能作为发版验收结果。
 
-正式发布验收必须把依赖切换为明确的 registry 版本，并重新执行安装、测试和双端构建。只有消费的是 NPM 产物，而不是本地源码链接，才能证明包导出、声明文件和依赖关系真实可用。
+正式发布验收必须从干净安装开始，确认锁文件不存在 `link:` 或 `file:`，再执行消费方测试和 Vue / React 双端构建。只有消费的是 Registry 产物，才能证明包导出、声明文件、跨包依赖和运行时样式真实可用。
+
+```bash
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build
+```
 
 每日 CI 会重新解析兼容范围内的最新发布版本，并拉取 `yotsuba-kit` 当前主分支构建
 Vue / React 的源码联调依赖；随后统一运行消费方测试和双端构建，用于尽早发现已发布版本
