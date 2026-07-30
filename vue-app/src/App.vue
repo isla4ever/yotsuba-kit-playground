@@ -267,7 +267,6 @@ const editable = ref(false)
 const settingsOpen = ref(false)
 const toast = ref('')
 const scheduleRef = ref<InstanceType<typeof YsSchedule> | null>(null)
-const websitePreview = new URLSearchParams(window.location.search).get('preview') === 'website'
 const desktopSwiping = ref(false)
 
 interface DesktopGestureState {
@@ -293,8 +292,7 @@ function resetDesktopGesture() {
 
 function onDesktopPointerDownCapture(event: PointerEvent) {
   if (
-    !websitePreview
-    || event.pointerType !== 'mouse'
+    event.pointerType !== 'mouse'
     || event.button !== 0
     || view.value !== 'schedule'
     || config.scheduleLayout !== 'grid'
@@ -820,9 +818,8 @@ function cycleTopBar() {
       </section>
 
       <div
-        class="stage__content"
+        class="stage__content is-desktop-gesture-ready"
         :class="{
-          'is-desktop-gesture-ready': websitePreview,
           'is-desktop-swiping': desktopSwiping,
         }"
         @pointerdown.capture="onDesktopPointerDownCapture"
