@@ -1,4 +1,14 @@
-# Yotsuba Kit Web 演示与消费验证
+<p align="center">
+  <img src="assets/branding/yotsuba-readme-icon.png" width="112" alt="Yotsuba Schedule 产品图标">
+</p>
+
+<h1 align="center">Yotsuba Kit Web 演示与消费验证</h1>
+
+<p align="center">Vue、React 与原生 Web 的移动端课表、Today 看板和正式依赖消费示例。</p>
+
+<p align="center">
+  <img src="assets/branding/yotsuba-readme-hero.png" width="100%" alt="Yotsuba Schedule 天气融合课表与 Today 看板产品主视觉">
+</p>
 
 Yotsuba Kit Playground 是组件库的独立 Web 消费方：一方面提供可直接运行的 Vue、React 与原生 HTML 示例，另一方面持续验证 `@iyotsuba/schedule-*` 从 NPM Registry 安装后的类型、样式、事件和构建结果。
 
